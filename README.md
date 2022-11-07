@@ -10,4 +10,4 @@ Uses Flask to create a webpage to upload audio files.
 
 3) Segments are then transcribed using [whisper](https://github.com/openai/whisper). Results are then displayed on the webpage in the form of a dialogue
 
-4) [TextRank](https://github.com/davidadamojr/TextRank) is used to output a 100-word summary of the entire audio clip using the transcribed text.
+4) [TextRank](https://github.com/davidadamojr/TextRank) is used to output a 100-word summary of the audio clip using the transcribed text. Longer clips are summarised every 10 minutes
