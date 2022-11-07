@@ -1,0 +1,35 @@
+Install python3.9
+
+Set up and activate virtual environment 
+
+1) python3 -m pip install virtualenv
+2) python3 -m virtualenv venv
+3) For Windows: 
+    a) cd venv/Scripts
+    b) activate
+
+   For Linux: 
+    a) source venv/bin/activate
+
+Install Flask, pydub, pandas
+
+4) pip install flask
+5) pip install pydub
+6) pip install pandas
+
+Install whisper(https://github.com/openai/whisper)
+
+7) pip install git+https://github.com/openai/whisper.git 
+8) Install ffmpeg into the system (Not by pip!)
+
+Install pyannote.audio(https://github.com/pyannote/pyannote-audio)
+9) pip install pyannote.audio
+10) 
+
+Install TextRank(https://github.com/davidadamojr/TextRank)
+
+11) pip install git+https://github.com/davidadamojr/TextRank.git
+12) textrank initialize
+
+Any issues, refer to links attached as instructions might be outdated. If any packages are missing, just pip install them if requested
+
