@@ -20,13 +20,13 @@ Install Flask, pydub, pandas
 Install whisper(https://github.com/openai/whisper)
 
 7) pip install git+https://github.com/openai/whisper.git 
-8) Install ffmpeg into the system (Not by pip!) Windows: Use chocolatey, Linux: Whatever package installer comes with your distribution. apt/yum
+8) Install ffmpeg into the system (Not by pip! Windows: Use chocolatey, Linux: Whatever package installer comes with your distribution. apt/yum)
 
 Install NeMo(https://github.com/NVIDIA/NeMo)
 
 9) pip install wget
 10) pip install unidecode
-11) install sox libsndfile1 ffmpeg (Not by pip!) Install system-wide
+11) install sox libsndfile1 ffmpeg (Not by pip! Install system-wide)
 12) python -m pip install git+https://github.com/NVIDIA/NeMo.git@r1.12.0#egg=nemo_toolkit[asr]
 13) pip install torchaudio -f https://download.pytorch.org/whl/torch_stable.html
 
