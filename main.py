@@ -4,7 +4,7 @@ from werkzeug.utils import secure_filename
 from omegaconf import OmegaConf
 from nemo.collections.asr.parts.utils.decoder_timestamps_utils import ASR_TIMESTAMPS
 from nemo.collections.asr.parts.utils.diarization_utils import ASR_DIAR_OFFLINE
-import textrank, os, whisper, pandas, json, math
+import textrank, os, whisper, pandas, json, math, soundfile, librosa
 
 UPLOAD_FOLDER = "uploads"
 app = Flask(__name__)
@@ -20,16 +20,20 @@ def upload():
 
 @app.route("/result", methods=["POST"])
 def result():
-    # obtain audio file, and save
+    # obtain audio file, convert to 16kHz and save
     file = request.files["file"]
     filename = secure_filename(file.filename)
     file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+    dest = str(UPLOAD_FOLDER + "/" + filename)  # save destination
+
+    data, _ = librosa.load(dest, sr=16000)
+    soundfile.write(dest, data=data, samplerate=16000)
 
     # load transciption model
     model = whisper.load_model("medium")
 
     # transcribe entire clip. split text every 500 words
-    transcription = model.transcribe(str(UPLOAD_FOLDER + "/" + filename), language="en")
+    transcription = model.transcribe(dest, language="en")
     transcription_list = transcription["text"].split()
     split_sections = [
         " ".join(transcription_list[i : i + 500])
@@ -42,26 +46,26 @@ def result():
         full_summary += " " + textrank.extract_sentences(section)
 
     # diarize in 50 min segments
-    audio = AudioSegment.from_wav(str(UPLOAD_FOLDER + "/" + filename))
+    audio = AudioSegment.from_wav(dest)
     CONFIG_NEMO = "config/diar_infer_telephonic.yaml"
     cfg_nemo = OmegaConf.load(CONFIG_NEMO)
     start = 0
-    end = 2400000  # 40 mins in ms
-    clip_length = 2400000
+    end = 1800000  # 30 mins in ms
+    clip_length = 1800000
     lines = []
 
     for i in range(math.ceil(audio.duration_seconds * 1000 / float(clip_length))):
-
-        two_min_clip = audio[start:end]
-        two_min_clip.export("clip.wav", format="wav")
+        print(start, end)
+        clip = audio[start:end]
+        clip.export(f"clip{i}.wav", format="wav")
 
         meta = {
-            "audio_filepath": "clip.wav",
+            "audio_filepath": f"clip{i}.wav",
             "offset": 0,
             "duration": None,
             "label": "infer",
             "text": "-",
-            "num_speakers": 2,
+            "num_speakers": None,
             "rttm_filepath": None,
             "uem_filepath": None,
         }
@@ -93,13 +97,9 @@ def result():
         asr_diar_offline = ASR_DIAR_OFFLINE(**cfg_nemo.diarizer)
         asr_diar_offline.word_ts_anchor_offset = asr_ts_decoder.word_ts_anchor_offset
         diar_hyp = (asr_diar_offline.run_diarization(cfg_nemo, word_ts_hyp))[0]
-        start += clip_length
-        end += clip_length
-
         # transcribe each speaker line
         model = whisper.load_model("medium")
-
-        for li in diar_hyp["clip"]:
+        for li in diar_hyp[f"clip{i}"]:
             line_info = li.split()  # split string into [start, end, speaker]
             sp_start, sp_end, speaker = (
                 int(float(line_info[0]) * 1000),  # convert to milliseconds for pydub
@@ -113,17 +113,23 @@ def result():
                 continue
 
             # Cut audio by speaker, add 2 second silence to beginning and end of section, save, transcribe
-            section = audio[sp_start:sp_end]
+            section = clip[sp_start:sp_end]
             silence = AudioSegment.silent(duration=2000)
             section = silence.append(section, crossfade=0)
             section = section.append(silence, crossfade=0)
             section.export("section.wav", format="wav")
 
             line = model.transcribe("section.wav", language="en")
+
+            if str(line["text"]) == "":
+                continue
             lines.append(str(speaker) + " : " + str(line["text"]))
             os.remove("section.wav")
 
-        os.remove("clip.wav")
+        os.remove(f"clip{i}.wav")
+        os.remove("input_manifest.json")
+        start += clip_length
+        end += clip_length
 
     os.remove("uploads/" + filename)
     df.loc[len(df.index)] = [filename, result]
