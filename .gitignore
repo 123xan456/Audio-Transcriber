@@ -152,3 +152,5 @@ cython_debug/
 #.idea/
 audio/Bearcreek01_03_thescalphunter_howard.wav
 audio/meetinglong.wav
+*.wav
+*.mp3
