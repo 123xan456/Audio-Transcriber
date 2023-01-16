@@ -40,3 +40,4 @@ Uses Flask to create a webpage to upload audio files.
 5. Use tempfiles instead of saving and reading from an actual file
 6. Add more logging to the program
 7. Add unittests to the program
+8. Reduce GPU memory usage
