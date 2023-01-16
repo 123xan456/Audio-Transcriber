@@ -4,6 +4,8 @@ from pathlib import Path
 from filelock import FileLock
 from torch import hub
 
+from LoggingUtils import MainLogger
+
 # Startup Configurations
 portNumber = 5000
 processWorkers = 1
@@ -26,3 +28,5 @@ try:
 except (LookupError, OSError):
     with FileLock(".lock") as lock:
         nltk.download("punkt", download_dir=RESOURCES, quiet=False)
+
+MainLogger.logger.info("Successfully loaded all configurations")

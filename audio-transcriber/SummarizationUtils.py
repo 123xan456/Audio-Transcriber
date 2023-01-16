@@ -1,6 +1,8 @@
 from nltk.tokenize import sent_tokenize, word_tokenize
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
+from LoggingUtils import MainLogger
+
 DEFAULT_MODEL = "philschmid/bart-large-cnn-samsum"
 
 '''
